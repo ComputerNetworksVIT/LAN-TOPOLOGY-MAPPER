@@ -165,11 +165,3 @@ Many hotspots **isolate devices**, preventing detection. Follow one of the setup
 | Permission denied | Missing sudo | Run `sudo python3 app.py` |
 | Vendor shows as "Unknown" | Vendor DB incomplete | Update Nmap or add manually |
 
----
-
-## Conclusion
-
-1. The project efficiently identifies all devices connected to a Wi-Fi or LAN network.  
-2. It integrates **Flask, Scapy, and Nmap** to demonstrate real-time device discovery.  
-3. It provides a **visual network topology map**, clearly showing how all devices are connected within the network.  
-4. The system highlights practical applications in **network analysis** and **cybersecurity**.
