@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wi-Fi Network Scanner</title>
+  <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/styles/vis-network.min.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    h2 {
+      background: #1e90ff;
+      color: white;
+      padding: 15px;
+      margin: 0;
+    }
+
+    button {
+      background: #1e90ff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 15px;
+    }
+
+    button:hover {
+      background: #005bbb;
+    }
+
+    #networkGraph {
+      width: 80%;
+      height: 400px;
+      margin: 20px auto;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: white;
+    }
+
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 85%;
+      background: white;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background: #1e90ff;
+      color: white;
+    }
+
+    #lastUpdate {
+      font-size: 14px;
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📡 Wi-Fi Network Devices</h2>
+  <button onclick="scanNetwork()">🔍 Scan</button>
+  <span id="lastUpdate">Last updated: --:--:--</span>
+
+  <div id="networkGraph"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>IP</th>
+        <th>MAC</th>
+        <th>Vendor</th>
+        <th>Hostname</th>
+      </tr>
+    </thead>
+    <tbody id="deviceTable"></tbody>
+  </table>
+
+  <script>
+    async function scanNetwork() {
+      document.getElementById("lastUpdate").textContent = "Scanning...";
+      const res = await fetch("/api/scan");
+      const data = await res.json();
+      updateTable(data.devices);
+      drawNetwork(data.devices);
+      const now = new Date();
+      document.getElementById("lastUpdate").textContent =
+        "Last updated: " + now.toLocaleTimeString();
+    }
+
+    function updateTable(devices) {
+      const table = document.getElementById("deviceTable");
+      table.innerHTML = "";
+      devices.forEach(d => {
+        const row = `
+          <tr>
+            <td>${d.ip}</td>
+            <td>${d.mac}</td>
+            <td>${d.vendor || "Unknown"}</td>
+            <td>${d.hostname || "Unknown"}</td>
+          </tr>`;
+        table.innerHTML += row;
+      });
+    }
+
+    function drawNetwork(devices) {
+      const nodes = [{ id: 0, label: "Your Device", color: "#1e90ff" }];
+      const edges = [];
+
+      devices.forEach((d, index) => {
+        nodes.push({
+          id: index + 1,
+          label: `${d.ip}\n${d.vendor || "Unknown"}`,
+          color: "#5cb85c"
+        });
+        edges.push({ from: 0, to: index + 1 });
+      });
+
+      const container = document.getElementById("networkGraph");
+      const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
+      const options = {
+        nodes: {
+          shape: "ellipse",
+          font: { size: 14 },
+          borderWidth: 1
+        },
+        edges: { color: "#848484" },
+        physics: { stabilization: true }
+      };
+      new vis.Network(container, data, options);
+    }
+  </script>
+
+</body>
+</html>
